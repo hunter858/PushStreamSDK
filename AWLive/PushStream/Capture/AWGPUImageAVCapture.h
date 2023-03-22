@@ -5,7 +5,7 @@
  */
 
 #import <Foundation/Foundation.h>
-#import "AWAVCapture.h"
+#import "AWAVBaseCapture.h"
 
-@interface AWGPUImageAVCapture : AWAVCapture
+@interface AWGPUImageAVCapture : AWAVBaseCapture
 @end

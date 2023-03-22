@@ -6,7 +6,6 @@
 
 #import <AVFoundation/AVFoundation.h>
 #import "AWAVConfig.h"
-
 #include "aw_all.h"
 
 typedef enum : NSUInteger {
@@ -24,7 +23,7 @@ typedef enum : NSUInteger {
 } AWEncoderErrorCode;
 
 @class AWEncoderManager;
-@interface AWEncoder : NSObject
+@interface AWBaseEncoder : NSObject
 @property (nonatomic, weak) AWEncoderManager *manager;
 //开始
 - (void)open;

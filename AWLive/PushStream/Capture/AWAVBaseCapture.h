@@ -6,21 +6,20 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-#include "aw_all.h"
 #import "AWAVConfig.h"
-#import "AWEncoder.h"
 #import "AWEncoderManager.h"
 #import "AWFileManager.h"
+#include "aw_all.h"
 
 /// rtmp状态回调
 extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_state new_state);
 
-@class AWAVCapture;
-@protocol AWAVCaptureDelegate <NSObject>
-- (void) avCapture:(AWAVCapture *)capture stateChangeFrom:(aw_rtmp_state) fromState toState:(aw_rtmp_state) toState;
+@class AWAVBaseCapture,AWAVBaseCaptureDelegate;
+@protocol AWAVBaseCaptureDelegate <NSObject>
+- (void) avCapture:(AWAVBaseCapture *)capture stateChangeFrom:(aw_rtmp_state) fromState toState:(aw_rtmp_state) toState;
 @end
 
-@interface AWAVCapture : NSObject
+@interface AWAVBaseCapture : NSObject
 /// 配置
 @property (nonatomic, strong) AWAudioConfig *audioConfig;
 @property (nonatomic, strong) AWVideoConfig *videoConfig;
@@ -36,7 +35,7 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
 @property (nonatomic, unsafe_unretained) AWVideoEncoderType videoEncoderType;
 
 /// 状态变化回调
-@property (nonatomic, weak) id<AWAVCaptureDelegate> stateDelegate;
+@property (nonatomic, weak) id<AWAVBaseCaptureDelegate> stateDelegate;
 ///是否将数据发送出去
 @property (nonatomic, unsafe_unretained) BOOL isCapturing;
 /// 预览view

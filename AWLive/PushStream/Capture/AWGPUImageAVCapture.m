@@ -8,12 +8,12 @@
 
 //GPUImage data handler
 @interface AWGPUImageAVCaptureDataHandler : GPUImageRawDataOutput< AWGPUImageVideoCameraDelegate>
-@property (nonatomic, weak) AWAVCapture *capture;
+@property (nonatomic, weak) AWAVBaseCapture *capture;
 @end
 
 @implementation AWGPUImageAVCaptureDataHandler
 
-- (instancetype)initWithImageSize:(CGSize)newImageSize resultsInBGRAFormat:(BOOL)resultsInBGRAFormat capture:(AWAVCapture *)capture
+- (instancetype)initWithImageSize:(CGSize)newImageSize resultsInBGRAFormat:(BOOL)resultsInBGRAFormat capture:(AWAVBaseCapture *)capture
 {
     self = [super initWithImageSize:newImageSize resultsInBGRAFormat:resultsInBGRAFormat];
     if (self) {

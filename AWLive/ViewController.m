@@ -7,12 +7,12 @@
 //
 
 #import "ViewController.h"
-#import "TestAVCapture.h"
+#import "AWLiveCapture.h"
 #import "AWFileManager.h"
 
 
 @interface ViewController ()
-@property (nonatomic, strong) TestVideoCapture *testVideoCapture;
+@property (nonatomic, strong) AWLiveCapture *liveVideoCapture;
 @property (nonatomic, strong) AWFileManager *awFileManager;
 @end
 
@@ -22,7 +22,7 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     
-    self.testVideoCapture = [[TestVideoCapture alloc] initWithViewController:self];
+    self.liveVideoCapture = [[AWLiveCapture alloc] initWithViewController:self];
     
    
     [self initSubviews];
@@ -56,7 +56,7 @@
     UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"change Present" message:nil preferredStyle:UIAlertControllerStyleActionSheet];
     for (NSString *preset in array) {
         UIAlertAction *action = [UIAlertAction actionWithTitle:preset style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-            [weakSelf.testVideoCapture updatePresent:preset];
+            [weakSelf.liveVideoCapture updatePresent:preset];
         }];
         [alertController addAction:action];
     }
@@ -99,7 +99,7 @@
 
 -(void)viewWillLayoutSubviews{
     [super viewWillLayoutSubviews];
-    [self.testVideoCapture onLayout];
+    [self.liveVideoCapture onLayout];
 }
 
 - (void)didReceiveMemoryWarning {

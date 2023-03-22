@@ -4,9 +4,9 @@
  视频编码器基类，只声明接口，和一些公共转换数据函数。
  */
 
-#import "AWEncoder.h"
+#import "AWBaseEncoder.h"
 
-@interface AWVideoEncoder : AWEncoder
+@interface AWVideoEncoder : AWBaseEncoder
 
 /// 临时加的
 @property (nonatomic, copy) NSMutableData *spsData;

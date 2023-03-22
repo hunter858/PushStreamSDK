@@ -29,7 +29,7 @@
     return _systemAvCapture;
 }
 
-- (AWAVCapture *)avCapture {
+- (AWAVBaseCapture *)avCapture {
     if (!self.audioEncoderType) {
         NSLog(@"[E] AVAVCaptureManager 未设置audioEncoderType");
         return nil;
@@ -61,7 +61,7 @@
         return nil;
     }
     
-    AWAVCapture *capture = nil;
+    AWAVBaseCapture *capture = nil;
     switch (self.captureType) {
         case AWAVCaptureTypeGPUImage:
             capture = self.gpuImageAvCapture;

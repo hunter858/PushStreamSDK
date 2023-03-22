@@ -1,8 +1,8 @@
  
 
-#import "AWEncoder.h"
+#import "AWBaseEncoder.h"
 
-@implementation AWEncoder
+@implementation AWBaseEncoder
 
 - (void)open{}
 

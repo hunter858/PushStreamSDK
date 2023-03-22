@@ -24,17 +24,10 @@
 @property (nonatomic, unsafe_unretained) NSInteger fps;                         //自由设置
 @property (nonatomic, unsafe_unretained) NSInteger dataFormat;                  //目前软编码只能是X264_CSP_NV12，硬编码无需设置
 @property (nonatomic, unsafe_unretained) NSInteger videoMaxKeyFrameInterval;    //关键帧间隔
-
-
-//推流方向
-@property (nonatomic, unsafe_unretained) UIInterfaceOrientation orientation;
-
--(BOOL)shouldRotate;
-
-// 推流分辨率宽高，目前不支持自由设置，只支持旋转。
-// UIInterfaceOrientationLandscapeLeft 和 UIInterfaceOrientationLandscapeRight 为横屏，其他值均为竖屏。
+@property (nonatomic, unsafe_unretained) UIInterfaceOrientation orientation;    //推流方向
 @property (nonatomic, readonly, unsafe_unretained) NSInteger pushStreamWidth;
 @property (nonatomic, readonly, unsafe_unretained) NSInteger pushStreamHeight;
 
+-(BOOL)shouldRotate;
 @property (nonatomic, readonly, unsafe_unretained) aw_x264_config x264Config;
 @end

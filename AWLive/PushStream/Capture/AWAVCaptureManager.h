@@ -5,7 +5,7 @@
  */
 
 #import <Foundation/Foundation.h>
-#import "AWAVCapture.h"
+#import "AWAVBaseCapture.h"
 #import "AWEncoderManager.h"
 
 typedef enum : NSUInteger {
@@ -17,7 +17,7 @@ typedef enum : NSUInteger {
 @interface AWAVCaptureManager : NSObject
 //视频捕获类型
 @property (nonatomic, unsafe_unretained) AWAVCaptureType captureType;
-@property (nonatomic, weak) AWAVCapture *avCapture;
+@property (nonatomic, weak) AWAVBaseCapture *avCapture;
 
 //编码器类型
 @property (nonatomic, unsafe_unretained) AWAudioEncoderType audioEncoderType;

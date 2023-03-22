@@ -4,7 +4,7 @@
 #import <AVFoundation/AVFoundation.h>
 #import "ViewController.h"
 
-@interface TestVideoCapture : NSObject
+@interface AWLiveCapture : NSObject
 
 - (instancetype)initWithViewController:(ViewController *)viewCtl;
 

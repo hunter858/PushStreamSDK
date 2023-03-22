@@ -1,9 +1,9 @@
  
 
-#import "AWAVCapture.h"
+#import "AWAVBaseCapture.h"
 #import "AWEncoderManager.h"
 
-__weak static AWAVCapture *sAWAVCapture = nil;
+__weak static AWAVBaseCapture *sAWAVCapture = nil;
 
 extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_state new_state){
     NSLog(@"[OC] rtmp state changed from(%s), to(%s)", aw_rtmp_state_description(old_state), aw_rtmp_state_description(new_state));
@@ -12,7 +12,7 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
     });
 }
 
-@interface AWAVCapture()
+@interface AWAVBaseCapture()
 //写队列
 {
     dispatch_queue_t _writeFileQueue;
@@ -42,7 +42,7 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
 @property (nonatomic ,strong) NSLock *lock;
 @end
 
-@implementation AWAVCapture
+@implementation AWAVBaseCapture
 
 - (NSOperationQueue *)encodeSampleOpQueue {
     if (!_encodeSampleOpQueue) {

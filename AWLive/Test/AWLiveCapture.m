@@ -1,6 +1,6 @@
  
 
-#import "TestAVCapture.h"
+#import "AWLiveCapture.h"
 #import "AWAVCaptureManager.h"
 
 /*
@@ -10,7 +10,7 @@
 //请修改此地址
 static NSString *sRtmpUrl = @"rtmp://192.168.102.194:52376/railgun/test";
 
-@interface TestVideoCapture ()<AWAVCaptureDelegate>
+@interface AWLiveCapture ()<AWAVBaseCaptureDelegate>
 
 //按钮
 @property (nonatomic, strong) UIButton *startBtn;
@@ -28,7 +28,7 @@ static NSString *sRtmpUrl = @"rtmp://192.168.102.194:52376/railgun/test";
 
 @end
 
-@implementation TestVideoCapture
+@implementation AWLiveCapture
 
 #pragma mark 懒加载
 - (AWAVCaptureManager *)captureManager {
@@ -48,8 +48,8 @@ static NSString *sRtmpUrl = @"rtmp://192.168.102.194:52376/railgun/test";
     return _captureManager;
 }
 
-- (AWAVCapture *)avCapture {
-    AWAVCapture *capture = self.captureManager.avCapture;
+- (AWAVBaseCapture *)avCapture {
+    AWAVBaseCapture *capture = self.captureManager.avCapture;
     capture.stateDelegate = self;
     return capture;
 }
@@ -139,7 +139,7 @@ static NSString *sRtmpUrl = @"rtmp://192.168.102.194:52376/railgun/test";
 }
 
 #pragma mark 事件
-- (void)avCapture:(AWAVCapture *)capture stateChangeFrom:(aw_rtmp_state)fromState toState:(aw_rtmp_state)toState{
+- (void)avCapture:(AWAVBaseCapture *)capture stateChangeFrom:(aw_rtmp_state)fromState toState:(aw_rtmp_state)toState{
     switch (toState) {
         case aw_rtmp_state_idle: {
             self.startBtn.enabled = YES;
