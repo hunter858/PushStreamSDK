@@ -18,7 +18,7 @@ static aw_flv_video_tag *aw_sw_encoder_create_flv_video_tag() {
 }
 
 //将采集到的video yuv数据，编码为flv video tag
-extern aw_flv_video_tag * aw_sw_encoder_encode_x264_data(int8_t *yuv_data, long len, long y_stride, uint32_t timeStamp) {
+extern aw_flv_video_tag *aw_sw_encoder_encode_x264_data(int8_t *yuv_data, long len, long y_stride, uint32_t timeStamp) {
     if (!aw_sw_x264_encoder_is_valid()) {
         aw_log("[E] aw_sw_encoder_encode_video_data when video encoder is not inited");
         return NULL;

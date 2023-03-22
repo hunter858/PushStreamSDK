@@ -60,34 +60,28 @@
     return nv12Data;
 }
 
-- (aw_flv_video_tag *) encodeYUVDataToFlvTag:(NSData *)yuvData {
+- (aw_flv_video_tag *)encodeYUVWithPixelBuffer:(CVPixelBufferRef)pixelBuffer {
     return NULL;
 }
 
-- (aw_flv_video_tag *) encodeVideoSampleBufToFlvTag:(CMSampleBufferRef)videoSample {
-    return [self encodeYUVDataToFlvTag:[self convertVideoSmapleBufferToYuvData:videoSample]];
+- (aw_flv_video_tag *)encodeVideoSampleBufToFlvTag:(CMSampleBufferRef)videoSample {
+    return [self encodeYUVWithPixelBuffer:CMSampleBufferGetImageBuffer(videoSample)];
 }
 
 - (aw_flv_video_tag *)createSpsPpsFlvTag {
     return NULL;
 }
 
-- (NSData *)convertVideoSmapleBufferToYuvData:(CMSampleBufferRef) videoSample {
+- (NSData *)convertVideoSmapleBufferToYuvData:(CVPixelBufferRef)pixelBuffer {
     // 获取yuv数据
-    // 通过CMSampleBufferGetImageBuffer方法，获得CVImageBufferRef。
-    // 这里面就包含了yuv420数据的指针
-    CVImageBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(videoSample);
-    
     //表示开始操作数据
     CVPixelBufferLockBaseAddress(pixelBuffer, 0);
     
     //图像宽度（像素）
     size_t src_stride_width = CVPixelBufferGetBytesPerRowOfPlane(pixelBuffer, 0);
-    self.videoConfig.src_stride_width = src_stride_width;
     
     //图像高度（像素）
     size_t pixelHeight = CVPixelBufferGetHeight(pixelBuffer);
-   
     
     //yuv中的y所占字节数
     size_t y_size = src_stride_width * pixelHeight;

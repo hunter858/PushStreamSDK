@@ -34,7 +34,36 @@
     [button setTitle:@"debugMenu" forState:UIControlStateNormal];
     [button addTarget:self action:@selector(debugMenu) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:button];
+    
+    
+    UIButton *button2 = [[UIButton alloc]initWithFrame:CGRectMake(0, 250, 100, 30)];
+    [button2 setTitle:@"present" forState:UIControlStateNormal];
+    [button2 addTarget:self action:@selector(updatePresent) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:button2];
     [self.view bringSubviewToFront:button];
+    [self.view bringSubviewToFront:button2];
+}
+
+
+- (void)updatePresent {
+    __weak typeof(self) weakSelf = self;
+    NSArray *array = @[AVCaptureSessionPreset3840x2160,
+                      AVCaptureSessionPreset1920x1080,
+                      AVCaptureSessionPreset1280x720,
+                      AVCaptureSessionPresetiFrame960x540,
+                      AVCaptureSessionPreset640x480];
+    
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"change Present" message:nil preferredStyle:UIAlertControllerStyleActionSheet];
+    for (NSString *preset in array) {
+        UIAlertAction *action = [UIAlertAction actionWithTitle:preset style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            [weakSelf.testVideoCapture updatePresent:preset];
+        }];
+        [alertController addAction:action];
+    }
+    UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"cancel" style:UIAlertActionStyleCancel handler:nil];
+    [alertController addAction:cancel];
+
+    [self presentViewController:alertController animated:YES completion:nil];
 }
 
 - (void)debugMenu {

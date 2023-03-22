@@ -8,7 +8,7 @@
  */
 
 //请修改此地址
-static NSString *sRtmpUrl = @"rtmp://192.168.0.101:60858/railgun/test";
+static NSString *sRtmpUrl = @"rtmp://192.168.102.194:52376/railgun/test";
 
 @interface TestVideoCapture ()<AWAVCaptureDelegate>
 
@@ -35,7 +35,7 @@ static NSString *sRtmpUrl = @"rtmp://192.168.0.101:60858/railgun/test";
     if (!_captureManager) {
         _captureManager = [[AWAVCaptureManager alloc] init];
         
-        //下面的3个类型必须设置，否则获取不到AVCapture
+        /// 下面的3个类型必须设置，否则获取不到AVCapture
         _captureManager.captureType = AWAVCaptureTypeGPUImage;
         _captureManager.audioEncoderType = AWAudioEncoderTypeHWAACLC;
         _captureManager.videoEncoderType = AWVideoEncoderTypeHWH264;
@@ -197,5 +197,10 @@ static NSString *sRtmpUrl = @"rtmp://192.168.0.101:60858/railgun/test";
 - (void)onSwitchClick {
     [self.avCapture switchCamera];
 }
+
+- (void)updatePresent:(AVCaptureSessionPreset)present {
+    [self.avCapture updatePresent:present];
+}
+
 
 @end

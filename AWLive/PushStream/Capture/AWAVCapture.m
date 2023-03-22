@@ -20,13 +20,10 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
 //编码队列，发送队列
 @property (nonatomic, strong) NSOperationQueue *encodeSampleOpQueue;
 @property (nonatomic, strong) NSOperationQueue *sendSampleOpQueue;
-
 //是否已发送了sps/pps
 @property (nonatomic, unsafe_unretained) BOOL isSpsPpsAndAudioSpecificConfigSent;
-
 //编码管理
 @property (nonatomic, strong) AWEncoderManager *encoderManager;
-
 //进入后台后，不推视频流
 @property (nonatomic, unsafe_unretained) BOOL inBackground;
 
@@ -73,8 +70,7 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
     return _encoderManager;
 }
 
-- (instancetype)init
-{
+- (instancetype)init {
     @throw [NSException exceptionWithName:@"please call initWithVideoConfig:audioConfig to init" reason:nil userInfo:nil];
     _writeFileQueue = dispatch_queue_create("sync.write.auido.queue", DISPATCH_QUEUE_SERIAL);
 }
@@ -101,7 +97,7 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
     self.inBackground = NO;
 }
 
--(void) didEnterBackground {
+- (void) didEnterBackground {
     self.inBackground = YES;
 }
 
@@ -350,6 +346,8 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
     }
 }
 
+- (void)updatePresent:(AVCaptureSessionPreset)present {}
+
 - (BOOL)startCaptureWithRtmpUrl:(NSString *)rtmpUrl {
     if (!rtmpUrl || rtmpUrl.length < 8) {
         NSLog(@"rtmpUrl is nil when start capture");
@@ -378,7 +376,7 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
     return YES;
 }
 
--(void) stopCapture {
+- (void)stopCapture {
     self.isCapturing = NO;
     self.isSpsPpsAndAudioSpecificConfigSent = NO;
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
@@ -399,13 +397,13 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
     
 }
 
--(void) switchCamera{}
+- (void)switchCamera{}
 
--(void) onStopCapture{}
+- (void)onStopCapture{}
 
--(void) onStartCapture{}
+- (void)onStartCapture{}
 
--(void)setisCapturing:(BOOL)isCapturing{
+- (void)setisCapturing:(BOOL)isCapturing {
     if (_isCapturing == isCapturing) {
         return;
     }
@@ -419,7 +417,7 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
     _isCapturing = isCapturing;
 }
 
--(UIView *)preview{
+- (UIView *)preview {
     if (!_preview) {
         _preview = [UIView new];
         _preview.bounds = [UIScreen mainScreen].bounds;
@@ -427,14 +425,10 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
     return _preview;
 }
 
-
-
-//发送数据
--(void)sendVideoSampleBuffer:(CMSampleBufferRef) sampleBuffer toEncodeQueue:(NSOperationQueue *) encodeQueue toSendQueue:(NSOperationQueue *) sendQueue  {
+- (void)sendVideoSampleBuffer:(CMSampleBufferRef)sampleBuffer toEncodeQueue:(NSOperationQueue *)encodeQueue toSendQueue:(NSOperationQueue *)sendQueue  {
     if (_inBackground) {
         return;
     }
-    CFRetain(sampleBuffer);
     __weak typeof(self) weakSelf = self;
     aw_flv_video_tag *video_tag = [weakSelf.encoderManager.videoEncoder encodeVideoSampleBufToFlvTag:sampleBuffer];
 
@@ -445,11 +439,10 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
         if (weakSelf.isCapturing) {
             [weakSelf sendFlvVideoTag:video_tag toSendQueue:sendQueue];
         }
-        CFRelease(sampleBuffer);
     }];
 }
 
-- (void)sendAudioSampleBuffer:(CMSampleBufferRef) sampleBuffer toEncodeQueue:(NSOperationQueue *) encodeQueue toSendQueue:(NSOperationQueue *) sendQueue {
+- (void)sendAudioSampleBuffer:(CMSampleBufferRef) sampleBuffer toEncodeQueue:(NSOperationQueue *)encodeQueue toSendQueue:(NSOperationQueue *)sendQueue {
     CFRetain(sampleBuffer);
     __weak typeof(self) weakSelf = self;
     
@@ -466,40 +459,22 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
     }];
 }
 
-
-- (NSData *)getPCMDataWithSampelBuffer:(CMSampleBufferRef) sampleBuffer{
-    //获取pcm数据大小
-    NSInteger audioDataSize = CMSampleBufferGetTotalSampleSize(sampleBuffer);
-    
-    //分配空间
-    int8_t *audio_data = aw_alloc((int32_t)audioDataSize);
-    
-    //获取CMBlockBufferRef
-    //这个结构里面就保存了 PCM数据
-    CMBlockBufferRef dataBuffer = CMSampleBufferGetDataBuffer(sampleBuffer);
-    //直接将数据copy至我们自己分配的内存中
-    CMBlockBufferCopyDataBytes(dataBuffer, 0, audioDataSize, audio_data);
-    
-    //返回数据
-    return [NSData dataWithBytesNoCopy:audio_data length:audioDataSize];
-}
-
-
--(void)sendVideoYuvData:(NSData *)yuvData toEncodeQueue:(NSOperationQueue *) encodeQueue toSendQueue:(NSOperationQueue *) sendQueue{
+- (void)sendVideoYuvData:(CVPixelBufferRef)pixelBuffer toEncodeQueue:(NSOperationQueue *)encodeQueue toSendQueue:(NSOperationQueue *)sendQueue {
     if (_inBackground) {
         return;
     }
     __weak typeof(self) weakSelf = self;
+    CVPixelBufferRetain(pixelBuffer);
     [encodeQueue addOperationWithBlock:^{
         if (weakSelf.isCapturing) {
-            NSData *rotatedData = [weakSelf.encoderManager.videoEncoder rotateNV12Data:yuvData];
-            aw_flv_video_tag *video_tag = [weakSelf.encoderManager.videoEncoder encodeYUVDataToFlvTag:rotatedData];
+            aw_flv_video_tag *video_tag = [weakSelf.encoderManager.videoEncoder encodeYUVWithPixelBuffer:pixelBuffer];
             [weakSelf sendFlvVideoTag:video_tag toSendQueue:sendQueue];
         }
+        CVPixelBufferRelease(pixelBuffer);
     }];
 }
 
--(void) sendAudioPcmData:(NSData *)pcmData toEncodeQueue:(NSOperationQueue *) encodeQueue toSendQueue:(NSOperationQueue *) sendQueue{
+- (void)sendAudioPcmData:(NSData *)pcmData toEncodeQueue:(NSOperationQueue *)encodeQueue toSendQueue:(NSOperationQueue *)sendQueue {
     __weak typeof(self) weakSelf = self;
     [encodeQueue addOperationWithBlock:^{
         if (weakSelf.isCapturing) {
@@ -509,7 +484,7 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
     }];
 }
 
--(void) sendFlvVideoTag:(aw_flv_video_tag *)video_tag toSendQueue:(NSOperationQueue *) sendQueue{
+- (void)sendFlvVideoTag:(aw_flv_video_tag *)video_tag toSendQueue:(NSOperationQueue *)sendQueue {
     if (_inBackground) {
         return;
     }
@@ -530,7 +505,7 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
     }
 }
 
--(void)sendFlvAudioTag:(aw_flv_audio_tag *)audio_tag toSendQueue:(NSOperationQueue *) sendQueue{
+- (void)sendFlvAudioTag:(aw_flv_audio_tag *)audio_tag toSendQueue:(NSOperationQueue *) sendQueue {
     __weak typeof(self) weakSelf = self;
     if(audio_tag) {
         [sendQueue addOperationWithBlock:^{
@@ -548,7 +523,7 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
     }
 }
 
--(void)sendSpsPpsAndAudioSpecificConfigTagToSendQueue:(NSOperationQueue *) sendQueue{
+- (void)sendSpsPpsAndAudioSpecificConfigTagToSendQueue:(NSOperationQueue *)sendQueue {
     if (self.isSpsPpsAndAudioSpecificConfigSent) {
         return;
     }
@@ -574,40 +549,64 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
     }];
 }
 
-//使用rtmp协议发送数据
--(void) sendVideoSampleBuffer:(CMSampleBufferRef) sampleBuffer{
+/// 使用rtmp协议发送数据
+- (void)sendVideoSampleBuffer:(CMSampleBufferRef) sampleBuffer {
     [self sendVideoSampleBuffer:sampleBuffer toEncodeQueue:self.encodeSampleOpQueue toSendQueue:self.sendSampleOpQueue];
 }
 
-- (void) sendAudioSampleBuffer:(CMSampleBufferRef) sampleBuffer{
+- (void)sendAudioSampleBuffer:(CMSampleBufferRef) sampleBuffer {
     [self sendAudioSampleBuffer:sampleBuffer toEncodeQueue:self.encodeSampleOpQueue toSendQueue:self.sendSampleOpQueue];
 }
 
--(void)sendVideoYuvData:(NSData *)videoData {
-    [self sendVideoYuvData:(NSData *)videoData toEncodeQueue:self.encodeSampleOpQueue toSendQueue:self.sendSampleOpQueue];
+- (void)sendVideoPixelBuffer:(CVPixelBufferRef)pixelBuffer {
+    [self sendVideoYuvData:pixelBuffer toEncodeQueue:self.encodeSampleOpQueue toSendQueue:self.sendSampleOpQueue];
 }
--(void) sendAudioPcmData:(NSData *)audioData {
+
+- (void)sendAudioPcmData:(NSData *)audioData {
     [self sendAudioPcmData:audioData toEncodeQueue:self.encodeSampleOpQueue toSendQueue:self.sendSampleOpQueue];
 }
 
--(void) sendFlvVideoTag:(aw_flv_video_tag *)flvVideoTag{
+- (void)sendFlvVideoTag:(aw_flv_video_tag *)flvVideoTag {
     [self sendFlvVideoTag:flvVideoTag toSendQueue:self.sendSampleOpQueue];
 }
 
--(void) sendFlvAudioTag:(aw_flv_audio_tag *)flvAudioTag{
+- (void)sendFlvAudioTag:(aw_flv_audio_tag *)flvAudioTag {
     [self sendFlvAudioTag:flvAudioTag toSendQueue:self.sendSampleOpQueue];
 }
 
 - (NSString *)captureSessionPreset {
     NSString *captureSessionPreset = nil;
-    if(self.videoConfig.width == 480 && self.videoConfig.height == 640){
+    if (self.videoConfig.width == 288 && self.videoConfig.height == 352) {
+        captureSessionPreset = AVCaptureSessionPreset352x288;
+    } else if (self.videoConfig.width == 480 && self.videoConfig.height == 640) {
         captureSessionPreset = AVCaptureSessionPreset640x480;
-    } else if(self.videoConfig.width == 540 && self.videoConfig.height == 960){
+    } else if (self.videoConfig.width == 540 && self.videoConfig.height == 960) {
         captureSessionPreset = AVCaptureSessionPresetiFrame960x540;
-    } else if(self.videoConfig.width == 720 && self.videoConfig.height == 1280){
+    } else if (self.videoConfig.width == 720 && self.videoConfig.height == 1280) {
         captureSessionPreset = AVCaptureSessionPreset1280x720;
+    } else if (self.videoConfig.width == 1080 && self.videoConfig.height == 1920) {
+        captureSessionPreset = AVCaptureSessionPreset1920x1080;
+    } else if (self.videoConfig.width == 2160 && self.videoConfig.height == 3840) {
+        captureSessionPreset = AVCaptureSessionPreset3840x2160;
     }
     return captureSessionPreset;
+}
+
+- (NSData *)getPCMDataWithSampelBuffer:(CMSampleBufferRef)sampleBuffer {
+    //获取pcm数据大小
+    NSInteger audioDataSize = CMSampleBufferGetTotalSampleSize(sampleBuffer);
+    
+    //分配空间
+    int8_t *audio_data = aw_alloc((int32_t)audioDataSize);
+    
+    //获取CMBlockBufferRef
+    //这个结构里面就保存了 PCM数据
+    CMBlockBufferRef dataBuffer = CMSampleBufferGetDataBuffer(sampleBuffer);
+    //直接将数据copy至我们自己分配的内存中
+    CMBlockBufferCopyDataBytes(dataBuffer, 0, audioDataSize, audio_data);
+    
+    //返回数据
+    return [NSData dataWithBytesNoCopy:audio_data length:audioDataSize];
 }
 
 @end

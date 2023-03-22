@@ -5,23 +5,19 @@
 #import <UIKit/UIKit.h>
 
 @interface AWSystemAVCapture ()<AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureAudioDataOutputSampleBufferDelegate>
-//前后摄像头
+/// 前后摄像头
 @property (nonatomic, strong) AVCaptureDeviceInput *frontCamera;
 @property (nonatomic, strong) AVCaptureDeviceInput *backCamera;
-
-//当前使用的视频设备
-@property (nonatomic, weak) AVCaptureDeviceInput *videoInputDevice;
-//音频设备
+/// 当前使用的视频设备
+@property (nonatomic,   weak) AVCaptureDeviceInput *videoInputDevice;
+/// 音频设备
 @property (nonatomic, strong) AVCaptureDeviceInput *audioInputDevice;
-
-//输出数据接收
+/// 输出数据接收
 @property (nonatomic, strong) AVCaptureVideoDataOutput *videoDataOutput;
 @property (nonatomic, strong) AVCaptureAudioDataOutput *audioDataOutput;
-
-//会话
+/// 会话
 @property (nonatomic, strong) AVCaptureSession *captureSession;
-
-//预览
+/// 预览
 @property (nonatomic, strong) AVCaptureVideoPreviewLayer *previewLayer;
 
 @end
@@ -31,10 +27,9 @@
 - (void)switchCamera {
     if ([self.videoInputDevice isEqual: self.frontCamera]) {
         self.videoInputDevice = self.backCamera;
-    }else{
+    } else {
         self.videoInputDevice = self.frontCamera;
     }
-    
     //更新fps
     [self updateFps: self.videoConfig.fps];
 }
@@ -49,7 +44,7 @@
     [self updateFps: self.videoConfig.fps];
 }
 
-//初始化视频设备
+/// 初始化视频设备
 - (void)createCaptureDevice {
     //创建视频设备
     NSArray *videoDevices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
@@ -64,7 +59,7 @@
     self.videoInputDevice = self.frontCamera;
 }
 
-//切换摄像头
+/// 切换摄像头
 - (void)setVideoInputDevice:(AVCaptureDeviceInput *)videoInputDevice {
     if ([videoInputDevice isEqual:_videoInputDevice]) {
         return;
@@ -90,7 +85,7 @@
 }
 
 
-//创建预览
+/// 创建预览
 - (void)createPreviewLayer {
     self.previewLayer = [AVCaptureVideoPreviewLayer layerWithSession:self.captureSession];
     self.previewLayer.frame = self.preview.bounds;
@@ -111,7 +106,7 @@
     }
 }
 
-//创建会话
+/// 创建会话
 -(void) createCaptureSession {
     self.captureSession = [AVCaptureSession new];
     
@@ -156,7 +151,10 @@
     
     [self.captureSession commitConfiguration];
     
-    [self.captureSession startRunning];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+        [self.captureSession startRunning];
+    });
+   
 }
 
 //销毁会话
@@ -184,11 +182,16 @@
     [self.audioDataOutput setSampleBufferDelegate:self queue:captureQueue];
 }
 
+
+- (void)updatePresent:(AVCaptureSessionPreset)present {
+    if ([self.captureSession canSetSessionPreset:present])  {
+        self.captureSession.sessionPreset = present;
+    }
+}
+
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
     if (self.isCapturing) {
         if ([self.videoDataOutput isEqual:captureOutput]) {
-            
-            
             [self sendVideoSampleBuffer:sampleBuffer];
         } else if ([self.audioDataOutput isEqual:captureOutput]) {
             [self sendAudioSampleBuffer:sampleBuffer];

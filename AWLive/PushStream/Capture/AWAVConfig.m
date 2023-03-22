@@ -61,7 +61,6 @@
         self.pushStreamWidth  = defaultWidth;
         self.pushStreamHeight  = defaultHeight;
         self.videoMaxKeyFrameInterval = 0;
-        self.src_stride_width = 768;// 720 对应的BytesPerRow 是 768
     }
     return self;
 }
@@ -84,7 +83,7 @@
     return UIInterfaceOrientationIsLandscape(self.orientation);
 }
 
-- (aw_x264_config) x264Config {
+- (aw_x264_config)x264Config {
     aw_x264_config x264_config;
     x264_config.width = (int32_t)self.pushStreamWidth;
     x264_config.height = (int32_t)self.pushStreamHeight;
@@ -92,7 +91,6 @@
     x264_config.fps = (int32_t)self.fps;
     x264_config.input_data_format = (int32_t)self.dataFormat;
     x264_config.videoMaxKeyFrameInterval =  (int32_t)self.fps * 2;
-    x264_config.y_stride = self.src_stride_width;
     return x264_config;
 }
 

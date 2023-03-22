@@ -183,7 +183,7 @@ extern aw_x264_context *alloc_aw_x264_context(aw_x264_config config) {
     x264_picture_t *pic_in = aw_alloc(sizeof(x264_picture_t));
     x264_picture_init(pic_in);
     
-    int alloc_width = aw_stride(config.y_stride);// 这里改成768 即可用解决软编码条纹的问题
+    int alloc_width = aw_stride(config.width);// 这里改成768 即可用解决软编码条纹的问题
     int value = x264_picture_alloc(pic_in, config.input_data_format, alloc_width, config.height);
     if(value < 0 ){
         printf("create pic_in error");

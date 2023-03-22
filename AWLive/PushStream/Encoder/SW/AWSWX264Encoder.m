@@ -4,8 +4,10 @@
 #import "AWEncoderManager.h"
 
 @implementation AWSWX264Encoder
-- (aw_flv_video_tag *) encodeYUVDataToFlvTag:(NSData *)yuvData {
-    NSUInteger y_stride = self.videoConfig.src_stride_width;
+/// 废弃，
+- (aw_flv_video_tag *)encodeYUVWithPixelBuffer:(CVPixelBufferRef)pixelBuffer {
+    NSData *yuvData = [self convertVideoSmapleBufferToYuvData:pixelBuffer];
+    long y_stride = CVPixelBufferGetBytesPerRowOfPlane(pixelBuffer, 0);
     return aw_sw_encoder_encode_x264_data((int8_t *)yuvData.bytes, yuvData.length, y_stride,  self.manager.timestamp + 1);
 }
  

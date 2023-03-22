@@ -22,50 +22,20 @@
     return _vSemaphore;
 }
 
-- (aw_flv_video_tag *)encodeYUVDataToFlvTag:(NSData *)yuvData {
+/// 废弃，改为pixelBuffer
+- (aw_flv_video_tag *)encodeYUVWithPixelBuffer:(CVPixelBufferRef)pixelBuffer {
     if (!_vEnSession) {
         return NULL;
     }
-    //yuv 变成 转CVPixelBufferRef
     OSStatus status = noErr;
-    
-    //视频宽度
-    size_t pixelWidth = self.videoConfig.pushStreamWidth;
-    //视频高度
-    size_t pixelHeight = self.videoConfig.pushStreamHeight;
-    
-    //现在要把NV12数据放入 CVPixelBufferRef中，因为 硬编码主要调用VTCompressionSessionEncodeFrame函数，此函数不接受yuv数据，但是接受CVPixelBufferRef类型。
-    CVPixelBufferRef pixelBuf = NULL;
-    //初始化pixelBuf，数据类型是kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange，此类型数据格式同NV12格式相同。
-    CVPixelBufferCreate(NULL, pixelWidth, pixelHeight, kCVPixelFormatType_420YpCbCr8BiPlanarFullRange, NULL, &pixelBuf);
-    
-    // Lock address，锁定数据，应该是多线程防止重入操作。
-    if (CVPixelBufferLockBaseAddress(pixelBuf, 0) != kCVReturnSuccess) {
-        [self onErrorWithCode:AWEncoderErrorCodeLockSampleBaseAddressFailed des:@"encode video lock base address failed"];
-        return NULL;
-    }
-    
-    //将yuv数据填充到CVPixelBufferRef中
-    size_t y_size =  aw_stride(CVPixelBufferGetBytesPerRowOfPlane(pixelBuf, 0)) * pixelHeight;
-    size_t uv_size = y_size / 2;
-    uint8_t *yuv_frame = (uint8_t *)yuvData.bytes;
-    
-    //处理y frame
-    uint8_t *y_frame = CVPixelBufferGetBaseAddressOfPlane(pixelBuf, 0);
-    memcpy(y_frame, yuv_frame, y_size);
-    
-    uint8_t *uv_frame = CVPixelBufferGetBaseAddressOfPlane(pixelBuf, 1);
-    memcpy(uv_frame, yuv_frame + y_size,  uv_size);
-    
-    //硬编码 CmSampleBufRef
-    
     //时间戳
     uint32_t ptsMs = self.manager.timestamp + 1; //self.vFrameCount++ * 1000.f / self.videoConfig.fps;
     
     CMTime pts = CMTimeMake(ptsMs, 1000);
-    
+    CVPixelBufferLockBaseAddress(pixelBuffer, 0);
     //硬编码主要其实就这一句。将携带NV12数据的PixelBuf送到硬编码器中，进行编码。
-    status = VTCompressionSessionEncodeFrame(_vEnSession, pixelBuf, pts, kCMTimeInvalid, NULL, pixelBuf, NULL);
+    status = VTCompressionSessionEncodeFrame(_vEnSession, pixelBuffer, pts, kCMTimeInvalid, NULL, NULL, NULL);
+    CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
     
     if (status == noErr) {
         dispatch_semaphore_wait(self.vSemaphore, DISPATCH_TIME_FOREVER);
@@ -86,18 +56,13 @@
             _naluData = nil;
             _isKeyFrame = NO;
             
-            CVPixelBufferUnlockBaseAddress(pixelBuf, 0);
-            CVImageBufferGetCleanRect(pixelBuf);
-            CFRelease(pixelBuf);
             
             return video_tag;
         }
     } else {
         [self onErrorWithCode:AWEncoderErrorCodeEncodeVideoFrameFailed des:@"encode video frame error"];
     }
-    CVPixelBufferUnlockBaseAddress(pixelBuf, 0);
     
-    CFRelease(pixelBuf);
     
     return NULL;
 }
