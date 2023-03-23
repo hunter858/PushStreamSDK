@@ -274,9 +274,8 @@ const NSString * STRING_FLV  = @"flv";
     self.dispatch_timer = nil;
 }
 
-- (void)_timerInterval{
+- (void)_timerInterval {
     self.recoderTimerNum--;
-    NSLog(@"xxx _timerInterval: %d",(int)self.recoderTimerNum);
     if (self.recoderTimerNum <= 0){
         [self _stopRecord];
         self.recoderTimerNum = 10;

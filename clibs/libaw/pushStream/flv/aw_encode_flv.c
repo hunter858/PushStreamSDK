@@ -2,8 +2,8 @@
 
 #include "aw_encode_flv.h"
 #include "aw_alloc.h"
-#include <string.h>
 #include "aw_utils.h"
+#include <string.h>
 
 extern aw_flv_script_tag *alloc_aw_flv_script_tag(){
     aw_flv_script_tag *script_tag = aw_alloc(sizeof(aw_flv_script_tag));

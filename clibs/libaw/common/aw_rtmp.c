@@ -107,7 +107,7 @@ static void aw_rtmp_state_changed_inner(aw_rtmp_context *ctx, aw_rtmp_state old_
             if (ctx->write_error_retry_curr_time >= ctx->write_error_retry_time_limit) {
                 aw_rtmp_close(ctx);
                 aw_rtmp_open(ctx);
-            }else{
+            } else {
                 ctx->write_error_retry_curr_time++;
             }
             break;
@@ -117,7 +117,7 @@ static void aw_rtmp_state_changed_inner(aw_rtmp_context *ctx, aw_rtmp_state old_
             //open错误次数过多，认为网络错误
             if (ctx->open_error_retry_curr_time >= ctx->open_error_retry_curr_time) {
                 aw_set_rtmp_state(ctx, aw_rtmp_state_error_net);
-            }else{
+            } else {
                 ctx->open_error_retry_curr_time++;
             }
             break;

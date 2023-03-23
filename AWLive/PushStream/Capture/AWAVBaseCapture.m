@@ -232,9 +232,9 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
         //再打开rtmp
         int retcode = aw_streamer_open(rtmpUrl.UTF8String, aw_rtmp_state_changed_cb_in_oc);
         
-        if(retcode){
+        if (retcode) {
             weakSelf.isCapturing = YES;
-        }else{
+        } else {
             NSLog(@"startCapture rtmpOpen error!!! retcode=%d", retcode);
             [weakSelf stopCapture];
         }
@@ -296,7 +296,7 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
     __weak typeof(self) weakSelf = self;
     aw_flv_video_tag *video_tag = [weakSelf.encoderManager.videoEncoder encodeVideoSampleBufToFlvTag:sampleBuffer];
 
-    if (video_tag) {
+    if (video_tag) {    /// dump Video
         [weakSelf _writeVideoFrame:video_tag file:self.fileManager.video_file];
     }
     [encodeQueue addOperationWithBlock:^{
@@ -353,7 +353,7 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
                 } else {
                     aw_streamer_send_video_data(video_tag);
                 }
-            }else{
+            } else {
                 free_aw_flv_video_tag((aw_flv_video_tag **)(&video_tag));
             }
         }];

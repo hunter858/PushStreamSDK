@@ -33,12 +33,12 @@ extern void aw_streamer_send_video_data(aw_flv_video_tag *video_tag) {
         return;
     }
     
-    //    aw_log("[D] aw_streamer_send_video_data timestamp=%u, compTime=%u", video_tag->common_tag.timestamp, video_tag->h264_composition_time);
+    /// aw_log("[D] aw_streamer_send_video_data timestamp=%u, compTime=%u", video_tag->common_tag.timestamp, video_tag->h264_composition_time);
     
     aw_streamer_send_flv_tag_to_rtmp(&video_tag->common_tag);
 }
 
-extern void aw_streamer_send_video_sps_pps_tag(aw_flv_video_tag *sps_pps_tag){
+extern void aw_streamer_send_video_sps_pps_tag(aw_flv_video_tag *sps_pps_tag) {
     if (!aw_streamer_is_rtmp_valid()) {
         aw_log("[E] aw_streamer_send_video_sps_pps_tag when rtmp is not valid");
         free_aw_flv_video_tag(&sps_pps_tag);
@@ -56,7 +56,7 @@ extern void aw_streamer_send_video_sps_pps_tag(aw_flv_video_tag *sps_pps_tag){
 
 //audio------
 
-extern void aw_streamer_send_audio_specific_config_tag(aw_flv_audio_tag *asc_tag){
+extern void aw_streamer_send_audio_specific_config_tag(aw_flv_audio_tag *asc_tag) {
     if (!aw_streamer_is_rtmp_valid()) {
         aw_log("[E] aw_streamer_send_audio_specific_config_tag when rtmp is not valid");
         free_aw_flv_audio_tag(&asc_tag);
@@ -84,7 +84,7 @@ extern void aw_streamer_send_audio_data(aw_flv_audio_tag *audio_tag){
 
 //rtmp------
 
-static void aw_streamer_send_flv_tag_to_rtmp(aw_flv_common_tag *common_tag){
+static void aw_streamer_send_flv_tag_to_rtmp(aw_flv_common_tag *common_tag) {
     if (common_tag) {
         aw_write_flv_tag(&s_output_buf, common_tag);
         switch (common_tag->tag_type) {
@@ -119,21 +119,21 @@ static void aw_streamer_send_flv_tag_to_rtmp(aw_flv_common_tag *common_tag){
     reset_aw_data(&s_output_buf);
 }
 
-static int8_t aw_streamer_is_rtmp_valid(){
+static int8_t aw_streamer_is_rtmp_valid() {
     return s_rtmp_ctx != NULL;
 }
 
-extern int8_t aw_streamer_is_streaming(){
+extern int8_t aw_streamer_is_streaming() {
     //    return aw_streamer_is_rtmp_valid() && aw_streamer_is_video_valid() && aw_streamer_is_audio_valid() && aw_is_rtmp_opened(s_rtmp_ctx);
     return aw_streamer_is_rtmp_valid() && aw_is_rtmp_opened(s_rtmp_ctx);
 }
 
-static void aw_streamer_rtmp_state_changed_callback(aw_rtmp_state old_state, aw_rtmp_state new_state){
-    if(new_state == aw_rtmp_state_connected){
+static void aw_streamer_rtmp_state_changed_callback(aw_rtmp_state old_state, aw_rtmp_state new_state) {
+    if (new_state == aw_rtmp_state_connected) {
         //打开rtmp 先发送 配置tag
         //        aw_streamer_send_video_sps_pps_tag();
         //        aw_streamer_send_audio_specific_config_tag();
-    }else if(new_state == aw_rtmp_state_error_open){
+    } else if(new_state == aw_rtmp_state_error_open) {
         aw_streamer_close_rtmp_context();
     }
     
@@ -142,14 +142,14 @@ static void aw_streamer_rtmp_state_changed_callback(aw_rtmp_state old_state, aw_
     }
 }
 
-static int8_t aw_steamer_open_rtmp_context(){
+static int8_t aw_steamer_open_rtmp_context() {
     if (!s_rtmp_ctx) {
         s_rtmp_ctx = alloc_aw_rtmp_context(s_rtmp_url, aw_streamer_rtmp_state_changed_callback);
     }
     return aw_rtmp_open(s_rtmp_ctx);
 }
 
-static void aw_streamer_close_rtmp_context(){
+static void aw_streamer_close_rtmp_context() {
     if (s_rtmp_ctx) {
         aw_rtmp_close(s_rtmp_ctx);
     }
@@ -157,7 +157,7 @@ static void aw_streamer_close_rtmp_context(){
 }
 
 //创建 outbuf
-static void aw_streamer_create_out_buf(){
+static void aw_streamer_create_out_buf() {
     if (s_output_buf) {
         aw_log("[E] aw_streamer_open_encoder s_out_buf is already exist");
         return;
@@ -166,7 +166,7 @@ static void aw_streamer_create_out_buf(){
 }
 
 //释放 outbuf
-static void aw_streamer_release_out_buf(){
+static void aw_streamer_release_out_buf() {
     if (!s_output_buf) {
         aw_log("[E] aw_streamer_open_encoder s_out_buf is already free");
         return;

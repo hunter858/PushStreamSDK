@@ -114,34 +114,34 @@ extern void free_aw_flv_script_tag(aw_flv_script_tag **);
 
 typedef struct aw_flv_audio_tag{
     aw_flv_common_tag common_tag;
-    aw_flv_a_codec_id sound_format;//声音格式，4bit(0.5字节)
-    aw_flv_a_sound_rate sound_rate;//声音频率，2bit
-    aw_flv_a_sound_size sound_size;//声音尺寸, 1bit
-    aw_flv_a_sound_type sound_type;//声音类型, 1bit
-    aw_flv_a_aac_packge_type aac_packet_type;//aac 包类型，1字节，如果sound format==10(AAC)会有这个字段，否则没有。
+    aw_flv_a_codec_id sound_format;                 //声音格式，4bit(0.5字节)
+    aw_flv_a_sound_rate sound_rate;                 //声音频率，2bit
+    aw_flv_a_sound_size sound_size;                 //声音尺寸, 1bit
+    aw_flv_a_sound_type sound_type;                 //声音类型, 1bit
+    aw_flv_a_aac_packge_type aac_packet_type;       //aac 包类型，1字节，如果sound format==10(AAC)会有这个字段，否则没有。
     
     //aac sqeuence header，包含了aac转流所需的必备内容，需要作为第一个audio tag发送。
-    aw_data *config_record_data;//audio config data
+    aw_data *config_record_data;                    //audio config data
     
-    aw_data *frame_data;//audio frame data
+    aw_data *frame_data;                            //audio frame data
 } aw_flv_audio_tag;
 
 extern aw_flv_audio_tag *alloc_aw_flv_audio_tag();
 extern void free_aw_flv_audio_tag(aw_flv_audio_tag **);
 
-typedef struct aw_flv_video_tag{
+typedef struct aw_flv_video_tag {
     aw_flv_common_tag common_tag;
-    aw_flv_v_frame_type frame_type;//帧类型，是否关键帧，4bit(0.5字节)
-    aw_flv_v_codec_id codec_id;//编码器id，4bit
+    aw_flv_v_frame_type frame_type;                 //帧类型，是否关键帧，4bit(0.5字节)
+    aw_flv_v_codec_id codec_id;                     //编码器id，4bit
     
     //h264才有
-    aw_flv_v_h264_packet_type h264_package_type;//h264包类型，1字节
-    uint32_t h264_composition_time;//h264 时间调整(即cts，pts = dts + cts), 3字节
+    aw_flv_v_h264_packet_type h264_package_type;    //h264包类型，1字节
+    uint32_t h264_composition_time;                 //h264 时间调整(即cts，pts = dts + cts), 3字节
     
     //avc sequence header, 包含h264需要的重要信息(sps，pps)，需要在第一个videotag时发送
-    aw_data *config_record_data;//video config data
+    aw_data *config_record_data;                    //video config data
     
-    aw_data *frame_data;//video frame data
+    aw_data *frame_data;                            //video frame data
 } aw_flv_video_tag;
 
 extern aw_flv_video_tag *alloc_aw_flv_video_tag();

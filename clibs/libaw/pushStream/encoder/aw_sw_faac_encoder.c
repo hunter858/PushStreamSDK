@@ -18,17 +18,17 @@ static aw_flv_audio_tag *aw_sw_encoder_create_flv_audio_tag(aw_faac_config *faac
     
     if (faac_cfg->sample_rate == 22050) {
         audio_tag->sound_rate = aw_flv_a_sound_rate_22kHZ;
-    }else if (faac_cfg->sample_rate == 11025) {
+    } else if (faac_cfg->sample_rate == 11025) {
         audio_tag->sound_rate = aw_flv_a_sound_rate_11kHZ;
-    }else if (faac_cfg->sample_rate == 5500) {
+    } else if (faac_cfg->sample_rate == 5500) {
         audio_tag->sound_rate = aw_flv_a_sound_rate_5_5kHZ;
-    }else{
+    } else {
         audio_tag->sound_rate = aw_flv_a_sound_rate_44kHZ;
     }
     
     if (faac_cfg->sample_size == 8) {
         audio_tag->sound_size = aw_flv_a_sound_size_8_bit;
-    }else{
+    } else {
         audio_tag->sound_size = aw_flv_a_sound_size_16_bit;
     }
     

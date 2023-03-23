@@ -12,14 +12,14 @@
 #include <string.h>
 
 typedef enum aw_rtmp_state{
-    aw_rtmp_state_idle,//默认情况
-    aw_rtmp_state_connecting,//连接中
-    aw_rtmp_state_connected,//连接成功
-    aw_rtmp_state_opened,//已打开，可以streaming了
-    aw_rtmp_state_closed,//关闭，发送后回到idle状态
-    aw_rtmp_state_error_write,//写入失败，发送完毕回到open状态
-    aw_rtmp_state_error_open,//打开失败，发送后回到idle
-    aw_rtmp_state_error_net,//多次连接失败，网络错误
+    aw_rtmp_state_idle,                         //默认情况
+    aw_rtmp_state_connecting,                   //连接中
+    aw_rtmp_state_connected,                    //连接成功
+    aw_rtmp_state_opened,                       //已打开，可以streaming了
+    aw_rtmp_state_closed,                       //关闭，发送后回到idle状态
+    aw_rtmp_state_error_write,                  //写入失败，发送完毕回到open状态
+    aw_rtmp_state_error_open,                   //打开失败，发送后回到idle
+    aw_rtmp_state_error_net,                    //多次连接失败，网络错误
 }aw_rtmp_state;
 
 extern const char *aw_rtmp_state_description(aw_rtmp_state rtmp_state);
@@ -31,14 +31,14 @@ typedef struct aw_rtmp_context{
     RTMP *rtmp;
     
     //写入错误断线重连
-    int8_t write_error_retry_time_limit;//写入错误重试次数，超过这个次数就要重连。
-    int8_t write_error_retry_curr_time;//当前重试错误次数。
+    int8_t write_error_retry_time_limit;        //写入错误重试次数，超过这个次数就要重连。
+    int8_t write_error_retry_curr_time;         //当前重试错误次数。
     
     //open错误重连
-    int8_t open_error_retry_time_limit;//连接重试次数，超过这个次数。
-    int8_t open_error_retry_curr_time;//当前连接重试的次数，表示连接错误。
+    int8_t open_error_retry_time_limit;         //连接重试次数，超过这个次数。
+    int8_t open_error_retry_curr_time;          //当前连接重试的次数，表示连接错误。
     
-    int8_t is_header_sent;//是不是发送过flv的header了
+    int8_t is_header_sent;                      //是不是发送过flv的header了
     
     //当前mp4文件开始时间戳
     double current_time_stamp;

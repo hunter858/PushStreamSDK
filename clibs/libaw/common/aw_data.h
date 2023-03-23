@@ -12,10 +12,10 @@
 
 //文件数据
 typedef struct aw_data{
-    uint32_t size;//有效数据长度
-    uint32_t alloc_size;//分配的数据长度
-    uint32_t curr_pos;//读取或写入的位置
-    uint8_t *data;//实际数据
+    uint32_t size;              //有效数据长度
+    uint32_t alloc_size;        //分配的数据长度
+    uint32_t curr_pos;          //读取或写入的位置
+    uint8_t *data;              //实际数据
 }aw_data;
 
 //数据操作
