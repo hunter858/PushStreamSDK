@@ -48,6 +48,7 @@
 		A426A0591DCE2D400010A4EB /* GPUImage.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A426A0541DCE2B750010A4EB /* GPUImage.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		A426A0621DCF71660010A4EB /* AWAVCaptureManager.m in Sources */ = {isa = PBXBuildFile; fileRef = A426A0611DCF71660010A4EB /* AWAVCaptureManager.m */; };
 		A461BE391DE826D500F18219 /* camera_switch.png in Resources */ = {isa = PBXBuildFile; fileRef = A461BE381DE826D500F18219 /* camera_switch.png */; };
+		E6A822CF29CAFB3D00BDEC85 /* AWSystemPreview.m in Sources */ = {isa = PBXBuildFile; fileRef = E6A822CE29CAFB3D00BDEC85 /* AWSystemPreview.m */; };
 		E6C00336286D972E0016595D /* AWFileManager.m in Sources */ = {isa = PBXBuildFile; fileRef = E6C00335286D972E0016595D /* AWFileManager.m */; };
 /* End PBXBuildFile section */
 
@@ -194,6 +195,8 @@
 		A426A0601DCF71660010A4EB /* AWAVCaptureManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AWAVCaptureManager.h; sourceTree = "<group>"; };
 		A426A0611DCF71660010A4EB /* AWAVCaptureManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AWAVCaptureManager.m; sourceTree = "<group>"; };
 		A461BE381DE826D500F18219 /* camera_switch.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = camera_switch.png; sourceTree = "<group>"; };
+		E6A822CD29CAFB3D00BDEC85 /* AWSystemPreview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AWSystemPreview.h; sourceTree = "<group>"; };
+		E6A822CE29CAFB3D00BDEC85 /* AWSystemPreview.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AWSystemPreview.m; sourceTree = "<group>"; };
 		E6C00334286D972E0016595D /* AWFileManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AWFileManager.h; path = AWLive/PushStream/Capture/AWFileManager.h; sourceTree = SOURCE_ROOT; };
 		E6C00335286D972E0016595D /* AWFileManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AWFileManager.m; path = AWLive/PushStream/Capture/AWFileManager.m; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
@@ -272,10 +275,12 @@
 		A4269D721DCE2A390010A4EB /* Capture */ = {
 			isa = PBXGroup;
 			children = (
-				A4269D731DCE2A390010A4EB /* AWAVBaseCapture.h */,
-				A4269D741DCE2A390010A4EB /* AWAVBaseCapture.m */,
 				A4269D751DCE2A390010A4EB /* AWAVConfig.h */,
 				A4269D761DCE2A390010A4EB /* AWAVConfig.m */,
+				E6A822CD29CAFB3D00BDEC85 /* AWSystemPreview.h */,
+				E6A822CE29CAFB3D00BDEC85 /* AWSystemPreview.m */,
+				A4269D731DCE2A390010A4EB /* AWAVBaseCapture.h */,
+				A4269D741DCE2A390010A4EB /* AWAVBaseCapture.m */,
 				A4269D771DCE2A390010A4EB /* AWGPUImageAVCapture.h */,
 				A4269D781DCE2A390010A4EB /* AWGPUImageAVCapture.m */,
 				A4269D791DCE2A390010A4EB /* AWSystemAVCapture.h */,
@@ -734,6 +739,7 @@
 				A4269D981DCE2A390010A4EB /* AWAVConfig.m in Sources */,
 				A4269D9A1DCE2A390010A4EB /* AWSystemAVCapture.m in Sources */,
 				A4269F821DCE2A8E0010A4EB /* aw_sw_faac_encoder.c in Sources */,
+				E6A822CF29CAFB3D00BDEC85 /* AWSystemPreview.m in Sources */,
 				A4269F851DCE2A8E0010A4EB /* aw_encode_flv.c in Sources */,
 				A4269D9F1DCE2A390010A4EB /* AWHWAACEncoder.m in Sources */,
 			);

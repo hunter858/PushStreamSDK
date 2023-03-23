@@ -23,12 +23,8 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
 /// 配置
 @property (nonatomic, strong) AWAudioConfig *audioConfig;
 @property (nonatomic, strong) AWVideoConfig *videoConfig;
-
 /// 文件写入
 @property (nonatomic, strong) AWFileManager *fileManager;
-@property (nonatomic, assign) BOOL enableWriteAudio;
-@property (nonatomic, assign) BOOL enableWriteVideo;
-@property (nonatomic, assign) BOOL enableWriteFLV;
 
 /// 编码器类型
 @property (nonatomic, unsafe_unretained) AWAudioEncoderType audioEncoderType;

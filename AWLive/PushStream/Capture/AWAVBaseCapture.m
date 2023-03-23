@@ -13,32 +13,15 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
 }
 
 @interface AWAVBaseCapture()
-//写队列
 {
-    dispatch_queue_t _writeFileQueue;
+    dispatch_queue_t _writeFileQueue;                                               /// 写队列
 }
-//编码队列，发送队列
-@property (nonatomic, strong) NSOperationQueue *encodeSampleOpQueue;
+@property (nonatomic, strong) NSOperationQueue *encodeSampleOpQueue;                /// 编码队列，发送队列
 @property (nonatomic, strong) NSOperationQueue *sendSampleOpQueue;
-//是否已发送了sps/pps
-@property (nonatomic, unsafe_unretained) BOOL isSpsPpsAndAudioSpecificConfigSent;
-//编码管理
-@property (nonatomic, strong) AWEncoderManager *encoderManager;
-//进入后台后，不推视频流
-@property (nonatomic, unsafe_unretained) BOOL inBackground;
-
-@property (nonatomic ,copy) NSString *pcmFilePath;
-@property (nonatomic ,copy) NSString *audioFilePath;
-@property (nonatomic ,copy) NSString *videoFilePath;
-@property (nonatomic ,copy) NSString *flvFilePath;
-
-@property (nonatomic ,assign) FILE *pcm_file;
-@property (nonatomic ,assign) FILE *aac_file;
-@property (nonatomic ,assign) FILE *h264_file;
-
-
+@property (nonatomic, unsafe_unretained) BOOL isSpsPpsAndAudioSpecificConfigSent;   /// 是否已发送了sps/pps
+@property (nonatomic, strong) AWEncoderManager *encoderManager;                     /// 编码管理
+@property (nonatomic, unsafe_unretained) BOOL inBackground;                         /// 进入后台后，不推视频流
 @property (nonatomic ,assign) BOOL isAlreadyWriteSPS_PPS;
-
 @property (nonatomic ,strong) NSLock *lock;
 @end
 
@@ -103,126 +86,10 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
 
 - (AWFileManager *)fileManager {
     if (!_fileManager) {
-        _fileManager = [AWFileManager new];
+        _fileManager = [[AWFileManager alloc]init];
     }
     return _fileManager;
 }
-
-- (void)setEnableWriteAudio:(BOOL)enableWriteAudio {
-    _enableWriteAudio = enableWriteAudio;
-    
-    /// aac file
-    NSString *aacFileName =  [self.fileManager createRandomMediaTypeName:MEDIA_TYPE_AAC];
-    self.audioFilePath = [self.fileManager createFileWithFileName:aacFileName];
-    const char *audioFilePath = self.audioFilePath.UTF8String;
-    FILE *aac_file = fopen(audioFilePath, "wb");
-    self.aac_file = aac_file;
-    
-    /// pcm file
-    NSString *pcmFileName = [self.fileManager createRandomMediaTypeName:MEDIA_TYPE_PCM];
-    self.pcmFilePath = [self.fileManager createFileWithFileName:pcmFileName];
-    const char *pcmFilePath = self.pcmFilePath.UTF8String;
-    FILE *pcm_file = fopen(pcmFilePath, "wb");
-    self.pcm_file = pcm_file;
-}
-
-
-- (void)setEnableWriteVideo:(BOOL)enableWriteVideo {
-    _enableWriteVideo = enableWriteVideo;
-
-    NSString *h264FileName =  [self.fileManager createRandomMediaTypeName:MEDIA_TYPE_H264];
-    self.videoFilePath = [self.fileManager createFileWithFileName:h264FileName];
-    const char *audioFilePath = self.videoFilePath.UTF8String;
-    FILE *h264_file = fopen(audioFilePath, "wb");
-    self.h264_file = h264_file;
-}
-
-
-- (void)writeVideoFrame:(aw_flv_video_tag *)videFrame isSPSPPS:(BOOL)isSPSPPS {
-    if (self.enableWriteVideo && self.h264_file) {
-        
-        if (isSPSPPS) {
-            /// sps pps
-            NSData *spsData = self.encoderManager.videoEncoder.spsData;
-            NSData *ppsData = self.encoderManager.videoEncoder.ppsData;
-            
-            size_t sps_size = fwrite(spsData.bytes, 1, spsData.length, self.h264_file);
-            if (sps_size != spsData.length) {
-                NSLog(@"write sps file error;");
-            }
-            size_t pps_size = fwrite(ppsData.bytes, 1, ppsData.length, self.h264_file);
-            if (pps_size != ppsData.length) {
-                NSLog(@"write pps file error;");
-            }
-            
-            [_lock lock];
-            self.isAlreadyWriteSPS_PPS = YES;
-            [_lock unlock];
-            
-        } else {
-            // normal nalu
-            
-            
-            if (self.isAlreadyWriteSPS_PPS) {
-                
-                NSData *startCode;
-                if (videFrame->frame_type == aw_flv_v_frame_type_key){
-                    uint8_t header[] = {0x00, 0x00, 0x00, 0x01};
-                    startCode = [NSData dataWithBytes:header length:4];
-                } else {
-                    uint8_t header[] = {0x00, 0x00, 0x01};
-                    startCode = [NSData dataWithBytes:header length:3];
-                }
-                fwrite(startCode.bytes, 1, startCode.length, self.h264_file);
-                
-                size_t nalue_size  = videFrame->frame_data->size;
-                size_t write_nalue_size = fwrite(videFrame->frame_data->data, 1, nalue_size, self.h264_file);
-                if (write_nalue_size != nalue_size) {
-                    NSLog(@"write nalu file error;");
-                }
-            }
-        }
-        
-    }
-}
-
-
-- (void)writePcmAudioData:(NSData *)pcmData file:(FILE *)file {
-    
-    if(!pcmData || !file || !_enableWriteAudio){ return; }
-    size_t pcmLength = pcmData.length;
-    size_t pkt_size = fwrite(pcmData.bytes, 1, pcmLength, file);
-    if (pkt_size != pcmLength ) {
-        NSLog(@"write aac file faild;");
-    }
-}
-
-- (void)writeAudioFrame:(aw_flv_audio_tag *)audioFrame file:(FILE *)file {
-    if(!audioFrame || !file){return;}
-        
-    aw_flv_tag_type tag_type = audioFrame->common_tag.tag_type;
-    if (self.enableWriteAudio && tag_type == aw_flv_tag_type_audio) {
-      
-        if (!file) {
-            NSLog(@"open aac file failed;");
-            return;
-        }
-        //写adts头
-        size_t aac_length = audioFrame->frame_data->size;
-        NSInteger profile = 2;
-        NSInteger sample_rate = self.audioConfig.sampleRate;
-        NSInteger channles = self.audioConfig.channelCount;
-        NSData *adts_header = [self adts_headerWithLength:aac_length profile:profile sampleRate:sample_rate channles:(int)channles];
-        fwrite(adts_header.bytes, 1, 7, file);
-        //写数据
-        size_t pkt_size = fwrite(audioFrame->frame_data->data, 1, aac_length, file);
-        if (pkt_size != aac_length ) {
-            NSLog(@"write aac file faild;");
-        }
-        
-    }
-}
-
 
 - (NSData *)adts_headerWithLength:(int)data_length profile:(int)profile sampleRate:(int)sampleRate channles:(int)channles {
     
@@ -330,7 +197,6 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
     return value;
 }
 
-//修改fps
 - (void)updateFps:(NSInteger)fps {
     NSArray *videoDevices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
     
@@ -425,15 +291,13 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
     return _preview;
 }
 
-- (void)sendVideoSampleBuffer:(CMSampleBufferRef)sampleBuffer toEncodeQueue:(NSOperationQueue *)encodeQueue toSendQueue:(NSOperationQueue *)sendQueue  {
-    if (_inBackground) {
-        return;
-    }
+- (void)sendVideoSampleBuffer:(CMSampleBufferRef)sampleBuffer toEncodeQueue:(NSOperationQueue *)encodeQueue toSendQueue:(NSOperationQueue *)sendQueue {
+    if (_inBackground)  return;
     __weak typeof(self) weakSelf = self;
     aw_flv_video_tag *video_tag = [weakSelf.encoderManager.videoEncoder encodeVideoSampleBufToFlvTag:sampleBuffer];
 
     if (video_tag) {
-        [weakSelf writeVideoFrame:video_tag isSPSPPS:NO];
+        [weakSelf _writeVideoFrame:video_tag file:self.fileManager.video_file];
     }
     [encodeQueue addOperationWithBlock:^{
         if (weakSelf.isCapturing) {
@@ -443,26 +307,19 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
 }
 
 - (void)sendAudioSampleBuffer:(CMSampleBufferRef) sampleBuffer toEncodeQueue:(NSOperationQueue *)encodeQueue toSendQueue:(NSOperationQueue *)sendQueue {
-    CFRetain(sampleBuffer);
+    if (_inBackground)  return;
     __weak typeof(self) weakSelf = self;
-    
-//    NSData *pcmData = [self getPCMDataWithSampelBuffer:sampleBuffer];
-//    [weakSelf writePcmAudioData:pcmData file:self.pcm_file];
-    
     aw_flv_audio_tag *audio_tag = [weakSelf.encoderManager.audioEncoder encodeAudioSampleBufToFlvTag:sampleBuffer];
     [encodeQueue addOperationWithBlock:^{
         if (weakSelf.isCapturing) {
-            [weakSelf writeAudioFrame:audio_tag file:self.aac_file];
+            [weakSelf _writeAudioFrame:audio_tag file:self.fileManager.audio_file];
             [weakSelf sendFlvAudioTag:audio_tag toSendQueue:sendQueue];
         }
-        CFRelease(sampleBuffer);
     }];
 }
 
 - (void)sendVideoYuvData:(CVPixelBufferRef)pixelBuffer toEncodeQueue:(NSOperationQueue *)encodeQueue toSendQueue:(NSOperationQueue *)sendQueue {
-    if (_inBackground) {
-        return;
-    }
+    if (_inBackground) return;
     __weak typeof(self) weakSelf = self;
     CVPixelBufferRetain(pixelBuffer);
     [encodeQueue addOperationWithBlock:^{
@@ -485,9 +342,7 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
 }
 
 - (void)sendFlvVideoTag:(aw_flv_video_tag *)video_tag toSendQueue:(NSOperationQueue *)sendQueue {
-    if (_inBackground) {
-        return;
-    }
+    if (_inBackground) return;
     __weak typeof(self) weakSelf = self;
     if (video_tag) {
         [sendQueue addOperationWithBlock:^{
@@ -505,7 +360,7 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
     }
 }
 
-- (void)sendFlvAudioTag:(aw_flv_audio_tag *)audio_tag toSendQueue:(NSOperationQueue *) sendQueue {
+- (void)sendFlvAudioTag:(aw_flv_audio_tag *)audio_tag toSendQueue:(NSOperationQueue *)sendQueue {
     __weak typeof(self) weakSelf = self;
     if(audio_tag) {
         [sendQueue addOperationWithBlock:^{
@@ -536,7 +391,6 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
         aw_flv_video_tag *spsPpsTag = [weakSelf.encoderManager.videoEncoder createSpsPpsFlvTag];
         if (spsPpsTag) {
             aw_streamer_send_video_sps_pps_tag(spsPpsTag);
-            [weakSelf writeVideoFrame:spsPpsTag isSPSPPS:YES];
         }
         //audio specific config tag
         aw_flv_audio_tag *audioSpecificConfigTag = [weakSelf.encoderManager.audioEncoder createAudioSpecificConfigFlvTag];
@@ -550,11 +404,11 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
 }
 
 /// 使用rtmp协议发送数据
-- (void)sendVideoSampleBuffer:(CMSampleBufferRef) sampleBuffer {
+- (void)sendVideoSampleBuffer:(CMSampleBufferRef)sampleBuffer {
     [self sendVideoSampleBuffer:sampleBuffer toEncodeQueue:self.encodeSampleOpQueue toSendQueue:self.sendSampleOpQueue];
 }
 
-- (void)sendAudioSampleBuffer:(CMSampleBufferRef) sampleBuffer {
+- (void)sendAudioSampleBuffer:(CMSampleBufferRef)sampleBuffer {
     [self sendAudioSampleBuffer:sampleBuffer toEncodeQueue:self.encodeSampleOpQueue toSendQueue:self.sendSampleOpQueue];
 }
 
@@ -595,18 +449,88 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
 - (NSData *)getPCMDataWithSampelBuffer:(CMSampleBufferRef)sampleBuffer {
     //获取pcm数据大小
     NSInteger audioDataSize = CMSampleBufferGetTotalSampleSize(sampleBuffer);
-    
     //分配空间
     int8_t *audio_data = aw_alloc((int32_t)audioDataSize);
-    
     //获取CMBlockBufferRef
-    //这个结构里面就保存了 PCM数据
     CMBlockBufferRef dataBuffer = CMSampleBufferGetDataBuffer(sampleBuffer);
     //直接将数据copy至我们自己分配的内存中
     CMBlockBufferCopyDataBytes(dataBuffer, 0, audioDataSize, audio_data);
     
     //返回数据
     return [NSData dataWithBytesNoCopy:audio_data length:audioDataSize];
+}
+
+#pragma mark Private
+
+/// dump H264/H265 Data
+- (void)_writeVideoFrame:(aw_flv_video_tag *)videFrame file:(FILE *)file{
+        if (!file) return;
+        if (self.isAlreadyWriteSPS_PPS == NO) {
+            /// sps pps
+            NSData *spsData = self.encoderManager.videoEncoder.spsData;
+            NSData *ppsData = self.encoderManager.videoEncoder.ppsData;
+            
+            size_t sps_size = fwrite(spsData.bytes, 1, spsData.length, file);
+            if (sps_size != spsData.length) {
+                NSLog(@"write sps file error;");
+            }
+            size_t pps_size = fwrite(ppsData.bytes, 1, ppsData.length, file);
+            if (pps_size != ppsData.length) {
+                NSLog(@"write pps file error;");
+            }
+            
+            [_lock lock];
+            self.isAlreadyWriteSPS_PPS = YES;
+            [_lock unlock];
+            
+        } else {
+            /// normal nalu
+            if (self.isAlreadyWriteSPS_PPS == YES) {
+                /// 这里保存需要删掉前面的4字节 大端长度；
+                size_t nalue_size  = videFrame->frame_data->size - 4;
+                size_t write_nalue_size = fwrite(videFrame->frame_data->data + 4 , 1, nalue_size, file);
+                if (write_nalue_size != nalue_size) {
+                    NSLog(@"write nalu file error;");
+                }
+            }
+        }
+}
+
+/// dump PCM Data
+- (void)_writePcmAudioData:(NSData *)pcmData file:(FILE *)file {
+    if(!pcmData || !file ){ return; }
+    size_t pcmLength = pcmData.length;
+    size_t pkt_size = fwrite(pcmData.bytes, 1, pcmLength, file);
+    if (pkt_size != pcmLength ) {
+        NSLog(@"write aac file faild;");
+    }
+}
+
+/// dump AAC Data
+- (void)_writeAudioFrame:(aw_flv_audio_tag *)audioFrame file:(FILE *)file {
+    if(!audioFrame || !file){return;}
+        
+    aw_flv_tag_type tag_type = audioFrame->common_tag.tag_type;
+    if (tag_type == aw_flv_tag_type_audio) {
+      
+        if (!file) {
+            NSLog(@"open aac file failed;");
+            return;
+        }
+        //写adts头
+        size_t aac_length = audioFrame->frame_data->size;
+        NSInteger profile = 2;
+        NSInteger sample_rate = self.audioConfig.sampleRate;
+        NSInteger channles = self.audioConfig.channelCount;
+        NSData *adts_header = [self adts_headerWithLength:aac_length profile:profile sampleRate:sample_rate channles:(int)channles];
+        fwrite(adts_header.bytes, 1, 7, file);
+        //写数据
+        size_t pkt_size = fwrite(audioFrame->frame_data->data, 1, aac_length, file);
+        if (pkt_size != aac_length ) {
+            NSLog(@"write aac file faild;");
+        }
+        
+    }
 }
 
 @end

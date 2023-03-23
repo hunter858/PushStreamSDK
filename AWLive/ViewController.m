@@ -13,7 +13,6 @@
 
 @interface ViewController ()
 @property (nonatomic, strong) AWLiveCapture *liveVideoCapture;
-@property (nonatomic, strong) AWFileManager *awFileManager;
 @end
 
 @implementation ViewController
@@ -40,8 +39,15 @@
     [button2 setTitle:@"present" forState:UIControlStateNormal];
     [button2 addTarget:self action:@selector(updatePresent) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:button2];
+    
+    UIButton *button3 = [[UIButton alloc]initWithFrame:CGRectMake(0, 300, 100, 30)];
+    [button3 setTitle:@"dump" forState:UIControlStateNormal];
+    [button3 addTarget:self action:@selector(dumpAction) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:button3];
+    
     [self.view bringSubviewToFront:button];
     [self.view bringSubviewToFront:button2];
+    [self.view bringSubviewToFront:button3];
 }
 
 
@@ -66,23 +72,51 @@
     [self presentViewController:alertController animated:YES completion:nil];
 }
 
+- (void)dumpAction {
+    AWFileManager *fileManager = self.liveVideoCapture.fileManager;
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"dump action" message:nil preferredStyle:UIAlertControllerStyleActionSheet];
+    UIAlertAction *action0 = [UIAlertAction actionWithTitle:@"dump PCM" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [fileManager createAndOpenFileWithMediaType:MEDIA_TYPE_PCM];
+    }];
+    UIAlertAction *action1 = [UIAlertAction actionWithTitle:@"dump AAC" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [fileManager createAndOpenFileWithMediaType:MEDIA_TYPE_AAC];
+    }];
+    
+    UIAlertAction *action2 = [UIAlertAction actionWithTitle:@"dump H264" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [fileManager createAndOpenFileWithMediaType:MEDIA_TYPE_H264];
+    }];
+    
+    UIAlertAction *action3 = [UIAlertAction actionWithTitle:@"dump FLV" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [fileManager createAndOpenFileWithMediaType:MEDIA_TYPE_FLV];
+    }];
+    
+    UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"cancel" style:UIAlertActionStyleCancel handler:nil];
+    [alertController addAction:action0];
+    [alertController addAction:action1];
+    [alertController addAction:action2];
+    [alertController addAction:action3];
+    [alertController addAction:cancel];
+
+    [self presentViewController:alertController animated:YES completion:nil];
+}
+
 - (void)debugMenu {
     
-    self.awFileManager = [AWFileManager new];
+    AWFileManager *fileManager = self.liveVideoCapture.fileManager;
     UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"debug" message:nil preferredStyle:UIAlertControllerStyleActionSheet];
     UIAlertAction *action0 = [UIAlertAction actionWithTitle:@"clean PCM" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        [self.awFileManager clearDocumentDirWithType:MEDIA_TYPE_PCM];
+        [fileManager clearCacheWithMediaType:MEDIA_TYPE_PCM];
     }];
     UIAlertAction *action1 = [UIAlertAction actionWithTitle:@"clean AAC" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        [self.awFileManager clearDocumentDirWithType:MEDIA_TYPE_AAC];
+        [fileManager clearCacheWithMediaType:MEDIA_TYPE_AAC];
     }];
     
     UIAlertAction *action2 = [UIAlertAction actionWithTitle:@"clean H264" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        [self.awFileManager clearDocumentDirWithType:MEDIA_TYPE_H264];
+        [fileManager clearCacheWithMediaType:MEDIA_TYPE_H264];
     }];
     
     UIAlertAction *action3 = [UIAlertAction actionWithTitle:@"clean FLV" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        [self.awFileManager clearDocumentDirWithType:MEDIA_TYPE_FLV];
+        [fileManager clearCacheWithMediaType:MEDIA_TYPE_FLV];
     }];
     
     UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"cancel" style:UIAlertActionStyleCancel handler:nil];

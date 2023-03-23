@@ -1,10 +1,11 @@
  
 
 #import "AWSystemAVCapture.h"
-#import <AVFoundation/AVFoundation.h>
 #import <UIKit/UIKit.h>
+#import <AVFoundation/AVFoundation.h>
+#import "AWSystemPreview.h"
 
-@interface AWSystemAVCapture ()<AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureAudioDataOutputSampleBufferDelegate>
+@interface AWSystemAVCapture ()<AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureAudioDataOutputSampleBufferDelegate,AWSystemPreviewDelegate>
 /// 前后摄像头
 @property (nonatomic, strong) AVCaptureDeviceInput *frontCamera;
 @property (nonatomic, strong) AVCaptureDeviceInput *backCamera;
@@ -18,14 +19,14 @@
 /// 会话
 @property (nonatomic, strong) AVCaptureSession *captureSession;
 /// 预览
-@property (nonatomic, strong) AVCaptureVideoPreviewLayer *previewLayer;
+@property (nonatomic, strong) AWSystemPreview *systemPreview;
 
 @end
 
 @implementation AWSystemAVCapture
 
 - (void)switchCamera {
-    if ([self.videoInputDevice isEqual: self.frontCamera]) {
+    if ([self.videoInputDevice isEqual:self.frontCamera]) {
         self.videoInputDevice = self.backCamera;
     } else {
         self.videoInputDevice = self.frontCamera;
@@ -39,9 +40,7 @@
     [self createOutput];
     [self createCaptureSession];
     [self createPreviewLayer];
-    
-    //更新fps
-    [self updateFps: self.videoConfig.fps];
+    [self updateFps:self.videoConfig.fps];
 }
 
 /// 初始化视频设备
@@ -87,9 +86,11 @@
 
 /// 创建预览
 - (void)createPreviewLayer {
-    self.previewLayer = [AVCaptureVideoPreviewLayer layerWithSession:self.captureSession];
-    self.previewLayer.frame = self.preview.bounds;
-    [self.preview.layer addSublayer:self.previewLayer];
+    self.systemPreview = [[AWSystemPreview alloc]init];
+    self.systemPreview.frame = self.preview.bounds;
+    self.systemPreview.session = self.captureSession;
+    self.systemPreview.delegate = self;
+    [self.preview addSubview:self.systemPreview];
 }
 
 - (void)setVideoOutConfig {
@@ -198,5 +199,90 @@
         }
     }
 }
+
+#pragma mark Private
+
+
+- (AVCaptureDevice *)_activeCamera {
+    return self.videoInputDevice.device;
+}
+
+
+- (void)focusDeviceAtPoint:(CGPoint)point handler :(void(^)(NSError *error))handler {
+
+    AVCaptureDevice *device = [self _activeCamera];
+    if ([device isFocusModeSupported:AVCaptureFocusModeContinuousAutoFocus] && [device isFocusPointOfInterestSupported]) {
+        NSError *error;
+        if ([device lockForConfiguration:&error]) {
+            device.focusPointOfInterest = point;
+            device.focusMode = AVCaptureFocusModeContinuousAutoFocus;
+            [device unlockForConfiguration];
+        }
+        if (handler != NULL){ handler(error);}
+    } else {
+        if (handler != NULL){
+            handler([self errorWithDescription:@"设备不支持对焦" code:2001]);
+        }
+    }
+}
+
+- (void)exposeDeviceAtPoint:(CGPoint)point handler:(void(^)(NSError *error))handler {
+    AVCaptureDevice *device = [self _activeCamera];
+    if ([device isExposureModeSupported:AVCaptureExposureModeContinuousAutoExposure] && [device isExposurePointOfInterestSupported]) {
+        NSError *error;
+        if ([device lockForConfiguration:&error]) {
+            device.exposurePointOfInterest = point;
+            device.exposureMode = AVCaptureExposureModeContinuousAutoExposure;
+            [device unlockForConfiguration];
+        }
+        if (handler != NULL){ handler(error);}
+    } else {
+        if (handler != NULL){
+            handler([self errorWithDescription:@"设备不支持曝光" code:2002]);
+        }
+    }
+}
+
+- (void)updateVideoZoomFactor:(CGFloat)factor {
+    if (factor < 1) factor = 1.f;
+    AVCaptureDevice *device = [self _activeCamera];
+    if (factor > device.maxAvailableVideoZoomFactor) return;
+    NSError *error = nil;
+    [device lockForConfiguration:&error];
+    if (!error) {
+        device.videoZoomFactor = factor;
+    }
+    [device unlockForConfiguration];
+}
+
+
+- (NSError *)errorWithDescription:(NSString *)text code:(NSInteger)code {
+    NSDictionary *descriptionDict = @{NSLocalizedDescriptionKey: text};
+    NSError *error = [NSError errorWithDomain:@"com.zheshi.live.camera.error" code:code userInfo:descriptionDict];
+    return error;
+}
+
+#pragma mark Delegate
+
+- (void)singleTappedAtPoint:(CGPoint)point{
+    [self focusDeviceAtPoint:point handler:^(NSError * _Nonnull error) {
+        if (error) {
+            NSLog(@"error ==> %@", error.localizedDescription);
+        }
+    }];
+    [self exposeDeviceAtPoint:point handler:^(NSError * _Nonnull error) {
+        if (error) {
+            NSLog(@"error ==> %@", error.localizedDescription);
+        }
+    }];
+}
+
+//- (void)doubleTappedAtPoint:(CGPoint)point{
+//
+//}
+//
+//- (void)longPressAtPoint:(CGPoint)point{
+//
+//}
 
 @end
